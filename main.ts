@@ -23,14 +23,22 @@ namespace SpriteKind {
  * 
  * - Bacteria needs a sprite (Medium)
  */
+sprites.onCreated(SpriteKind.VCell, function (sprite) {
+    if (VirusAmount > 30) {
+        sprites.destroy(sprite)
+        VirusAmount += -1
+    }
+})
 sprites.onOverlap(SpriteKind.Player, SpriteKind.VCell, function (sprite, otherSprite) {
     sprites.destroy(otherSprite)
     info.changeScoreBy(1)
     sprite.startEffect(effects.spray, 500)
+    VirusAmount += -1
 })
 sprites.onOverlap(SpriteKind.VCell, SpriteKind.HCell, function (sprite, otherSprite) {
     otherSprite.setKind(SpriteKind.InfectedHCell)
     sprites.destroy(sprite)
+    VirusAmount += -1
     animation.runImageAnimation(
     sprite,
     [img`
@@ -56,7 +64,7 @@ sprites.onOverlap(SpriteKind.VCell, SpriteKind.HCell, function (sprite, otherSpr
     )
     timer.after(10000, function () {
         sprites.destroy(otherSprite)
-        for (let index = 0; index < 5; index++) {
+        for (let index = 0; index < randint(4, 8); index++) {
             VirusCell = sprites.create(img`
                 . . . . . . . . . . . . . . . . 
                 . . . . . . . . . . . . . . . . 
@@ -78,6 +86,7 @@ sprites.onOverlap(SpriteKind.VCell, SpriteKind.HCell, function (sprite, otherSpr
             VirusCell.setVelocity(randint(-35, 35), randint(-35, 35))
             VirusCell.setPosition(otherSprite.x, otherSprite.y)
             VirusCell.setBounceOnWall(true)
+            VirusAmount += 1
         }
     })
 })
@@ -93,6 +102,7 @@ sprites.onOverlap(SpriteKind.HCell, SpriteKind.HCell, function (sprite, otherSpr
         otherSprite.setFlag(SpriteFlag.Invisible, false)
     })
 })
+let VirusAmount = 0
 let VirusCell: Sprite = null
 let HC3: Sprite = null
 let HC2: Sprite = null
@@ -326,9 +336,36 @@ timer.after(1000, function () {
         VirusCell.setVelocity(randint(-25, 25), randint(-25, 25))
         tiles.placeOnRandomTile(VirusCell, assets.tile`transparency16`)
         VirusCell.setBounceOnWall(true)
+        VirusAmount += 1
     }
     ClarityInV = 0
     CreationStop = 0
+})
+game.onUpdate(function () {
+    if (VirusAmount < 3 && CreationStop == 0) {
+        VirusCell = sprites.create(img`
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . c c c . . . . . . 
+            . . . . . . a b a a . . . . . . 
+            . . . . . c b a f c a c . . . . 
+            . . . . c b b b f f a c c . . . 
+            . . . . b b f a b b a a c . . . 
+            . . . . c b f f b a f c a . . . 
+            . . . . . c a a c b b a . . . . 
+            . . . . . . c c c c . . . . . . 
+            . . . . . . . c . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            `, SpriteKind.VCell)
+        VirusCell.setVelocity(randint(-25, 25), randint(-25, 25))
+        tiles.placeOnRandomTile(VirusCell, assets.tile`transparency16`)
+        VirusCell.setBounceOnWall(true)
+        VirusAmount += 1
+    }
 })
 game.onUpdateInterval(10000, function () {
     if (CreationStop == 0) {
